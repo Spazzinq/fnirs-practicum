@@ -6,7 +6,7 @@ function mvpa(age)
 % ; {subj3_file1} }
 str_age = sprintf('%02dmo',age);
 
-nirs_folder = '/Users/conelab/Documents/fNIRS_Practicum/' + str_age + '_train_peekaboo';
+nirs_folder = ['/Users/conelab/Documents/fNIRS_Practicum/' str_age '_train_peekaboo'];
 nirs_files = dir([nirs_folder filesep '*_pp24.nirs']);
 
 % Open each of the .nirs files and fix the s-matrix. Negative numbers mess
@@ -149,14 +149,14 @@ for hb_type = hb_species_list
 
     SubjectIDs = arrayfun(@(x) x.Subject.Subject_ID, MCP_struct_chan(between_subj_level.incl_subjects),'UniformOutput',false)';
 
-    out_filename = sprintf('Peekaboo_' + str_age + '_chan_%s_BetweenSubjAccuracy.csv',hb_type{:});
+    out_filename = sprintf('Peekaboo_%s_chan_%s_BetweenSubjAccuracy.csv', str_age, hb_type{:});
     writecell([SubjectIDs, num2cell(CarsVsFaces), num2cell(SocialVsNonsocial), num2cell(VideoOnly), num2cell(AllClasses), repmat(hb_type,length(SubjectIDs),1)],out_filename);
 
     draw_mcpa_output( between_subj_level );
-    saveas(gcf,sprintf('figures/' + str_age + '_%s_accuracy.pdf',hb_type{:})); close gcf;
-    saveas(gcf,sprintf('figures/' + str_age + '_%s_features.pdf',hb_type{:})); close gcf;
+    saveas(gcf,sprintf('figures/%s_%s_accuracy.pdf', str_age, hb_type{:})); close gcf;
+    saveas(gcf,sprintf('figures/%s_%s_features.pdf', str_age, hb_type{:})); close gcf;
 
-    fprintf(str_age + ', %s: overall=%0.2f, videos=%0.2f, visual=%0.2f, auditory=%0.2f\n', hb_type{:}, OverallAcc, nanmean(VideoOnly),nanmean(CarsVsFaces), nanmean(SocialVsNonsocial));
-    save(['Peekaboo_' + str_age + '_' hb_type{:} '_chan_data.mat'],'MCP_struct_chan','between_subj_level')
+    fprintf('%s, %s: overall=%0.2f, videos=%0.2f, visual=%0.2f, auditory=%0.2f\n', str_age, hb_type{:}, OverallAcc, nanmean(VideoOnly),nanmean(CarsVsFaces), nanmean(SocialVsNonsocial));
+    save(['Peekaboo_' str_age '_' hb_type{:} '_chan_data.mat'],'MCP_struct_chan','between_subj_level')
 
 end

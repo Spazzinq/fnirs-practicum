@@ -10,11 +10,11 @@ nirs_files = dir([nirs_folder filesep '*' preprocessed_suffix '.nirs'])
 
 % Open each of the .nirs files and fix the s-matrix. Negative numbers mess
 % up the logical flagging, so they are removed in the new s_fix matrix.
-for file_idx = 1:length(nirs_files)
-    nir_dat = load([nirs_files(file_idx).folder filesep nirs_files(file_idx).name],'-mat');
+for file_index = 1:length(nirs_files)
+    nir_dat = load([nirs_files(file_index).folder filesep nirs_files(file_index).name],'-mat');
     if ~isfield(nir_dat,'s_fix')
         nir_dat.s_fix = nir_dat.s>0;
-        save([nirs_files(file_idx).folder filesep nirs_files(file_idx).name],'-struct','nir_dat');
+        save([nirs_files(file_index).folder filesep nirs_files(file_index).name],'-struct','nir_dat');
     end
     clear('nir_dat');
 end
@@ -42,25 +42,25 @@ MCP_struct_chan = build_MCP(nirs_files_cell,subject_ids,probe_id,'s_fix');
 
 % Reassign all the condition names based on the names stored in the .nirs
 % files. Ideally they'd be the same order, but who knows!
-for file_idx = 1:length(nirs_files)
-    nir_dat = load(MCP_struct_chan(file_idx).Experiment.Runs(1).Source_files{:},'-mat');
-    fprintf('Subject: %s\n', MCP_struct_chan(file_idx).Subject.Subject_ID);
+for file_index = 1:length(nirs_files)
+    nir_dat = load(MCP_struct_chan(file_index).Experiment.Runs(1).Source_files{:},'-mat');
+    fprintf('Subject: %s\n', MCP_struct_chan(file_index).Subject.Subject_ID);
     cond_names = nir_dat.CondNames;
     for old_mark = 1:length(cond_names)
-        fprintf('%s -> %s ', cond_names{old_mark}, MCP_struct_chan(file_idx).Experiment.Conditions(old_mark).Name)
-        MCP_struct_chan(file_idx) = MCP_relabel_stimuli(MCP_struct_chan(file_idx),old_mark,cond_names{old_mark},0);
+        fprintf('%s -> %s ', cond_names{old_mark}, MCP_struct_chan(file_index).Experiment.Conditions(old_mark).Name)
+        MCP_struct_chan(file_index) = MCP_relabel_stimuli(MCP_struct_chan(file_index),old_mark,cond_names{old_mark},0);
     end
     fprintf('\n');
 end
 
 % Reassign all the condition names to something interpretable
-for file_idx = 1:length(nirs_files)
-    fprintf('Subject: %s\n', MCP_struct_chan(file_idx).Subject.Subject_ID);
+for file_index = 1:length(nirs_files)
+    fprintf('Subject: %s\n', MCP_struct_chan(file_index).Subject.Subject_ID);
     old_cond_names = {'C','S','N','V'};
     cond_names = {'Cars','Silent Video','Nonvocal Video','Vocal Video'};
-    for old_idx = 1:length(cond_names)
-        fprintf('%s -> %s ', cond_names{old_idx}, old_cond_names{old_idx})
-        MCP_struct_chan(file_idx) = MCP_relabel_stimuli(MCP_struct_chan(file_idx),old_cond_names{old_idx},cond_names{old_idx},0);
+    for old_index = 1:length(cond_names)
+        fprintf('%s -> %s ', cond_names{old_index}, old_cond_names{old_index})
+        MCP_struct_chan(file_index) = MCP_relabel_stimuli(MCP_struct_chan(file_index),old_cond_names{old_index},cond_names{old_index},0);
     end
     fprintf('\n');
 end
@@ -71,21 +71,21 @@ MCP_struct_chan = MCP_struct_chan(arrayfun( @(x) sum(x.fNIRS_Data.Onsets_Matrix(
 
 % Match the number of Cars trials to the number of trials in the other
 % three conditions. Cars onsets/triggers are randomly selected
-for file_idx = 1:length(MCP_struct_chan)
-    fprintf('Subject: %s\n', MCP_struct_chan(file_idx).Subject.Subject_ID);
+for file_index = 1:length(MCP_struct_chan)
+    fprintf('Subject: %s\n', MCP_struct_chan(file_index).Subject.Subject_ID);
 
     % Identify the column of Onsets Matrix containing Cars and count onsets
-    cars_bool_index = strcmp('Cars',{MCP_struct_chan(file_idx).Experiment.Conditions(:).Name});
-    n_cars = sum(MCP_struct_chan(file_idx).fNIRS_Data.Onsets_Matrix(:,cars_bool_index));
+    cars_bool_index = strcmp('Cars',{MCP_struct_chan(file_index).Experiment.Conditions(:).Name});
+    n_cars = sum(MCP_struct_chan(file_index).fNIRS_Data.Onsets_Matrix(:,cars_bool_index));
 
     % Identify the column of Onsets Matrix containing other conditions and
     % count their onsets as well. Average across the other conditions to
     % determine the number of Cars trials to retain
-    sil_bool_index = strcmp('Silent Video',{MCP_struct_chan(file_idx).Experiment.Conditions(:).Name});
-    non_bool_index = strcmp('Nonvocal Video',{MCP_struct_chan(file_idx).Experiment.Conditions(:).Name});
-    voc_bool_index = strcmp('Vocal Video',{MCP_struct_chan(file_idx).Experiment.Conditions(:).Name});
+    sil_bool_index = strcmp('Silent Video',{MCP_struct_chan(file_index).Experiment.Conditions(:).Name});
+    non_bool_index = strcmp('Nonvocal Video',{MCP_struct_chan(file_index).Experiment.Conditions(:).Name});
+    voc_bool_index = strcmp('Vocal Video',{MCP_struct_chan(file_index).Experiment.Conditions(:).Name});
     not_cars_bool_index = logical(sil_bool_index+non_bool_index+voc_bool_index);
-    n_cars_new = round(mean(sum(MCP_struct_chan(file_idx).fNIRS_Data.Onsets_Matrix(:,not_cars_bool_index),1)),0);
+    n_cars_new = round(mean(sum(MCP_struct_chan(file_index).fNIRS_Data.Onsets_Matrix(:,not_cars_bool_index),1)),0);
 
     fprintf('Found %g car onsets, keeping %g as "Included Cars".\n',n_cars,n_cars_new);
 
@@ -96,7 +96,7 @@ for file_idx = 1:length(MCP_struct_chan)
     % Included Cars will be used for the analysis
     new_labels = repmat({'Excluded Cars'},n_cars,1);
     new_labels(index_cars_to_keep) = {'Included Cars'};
-    MCP_struct_chan(file_idx) = MCP_relabel_stimuli(MCP_struct_chan(file_idx),'Cars',new_labels,0);
+    MCP_struct_chan(file_index) = MCP_relabel_stimuli(MCP_struct_chan(file_index),'Cars',new_labels,0);
 
     fprintf('\n');
 end

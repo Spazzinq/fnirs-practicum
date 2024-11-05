@@ -1,4 +1,4 @@
-function draw_mcpa_output( between_subj_level )
+function draw_mvpa_output( between_subj_level )
 %% draw_mcpa_output visualizes output from classification scripts
 % The only input to the draw_mcpa_output function is the struct resulting
 % from a classification, e.g,. output from nfold_classify_ParticipantLevel.

@@ -1,11 +1,12 @@
-function MVPA(str_age)
+function mvpa(age)
 %% Build a list of the .nirs files
-% Keep in mind that build_MCP expects a certain structure, and the file names 
-% need to be nested by subject. Even if there is only one file per subject, it 
-% needs the nested cells format: nirs_files_cell = { {subj1_file1} ; {subj2_file1} 
+% Keep in mind that build_MCP expects a certain structure, and the file names
+% need to be nested by subject. Even if there is only one file per subject, it
+% needs the nested cells format: nirs_files_cell = { {subj1_file1} ; {subj2_file1}
 % ; {subj3_file1} }
+str_age = sprintf('%02dmo',age);
 
-nirs_folder = '/Users/conelab/Documents/BEAN_fNIRS_2024/' + str_age + '06mo_train_peekaboo';
+nirs_folder = '/Users/conelab/Documents/BEAN_fNIRS_2024/' + str_age + '_train_peekaboo';
 nirs_files = dir([nirs_folder filesep '*_pp24.nirs']);
 
 % Open each of the .nirs files and fix the s-matrix. Negative numbers mess
@@ -23,13 +24,20 @@ end
 restoredefaultpath;
 % Download Consortium toolbox at: https://github.com/TeamMCPA/Consortium-Analyses
 addpath(genpath([pwd filesep 'Consortium-Analyses-20210827']));
-[nirs_files_cell, subject_ids] = prep_nirsfiles_mcp( nirs_files , '_' , 'BCR');
-probe_id = {'BeanLarge'};
 
-if strcmp("06mo", str_age)
-    probe_id = {'BeanSmall'};
+if age == 6 || age == 24
+    type = 'BCR';
+elseif age == 36 || age == 60
+    type = 'BP';
 end
 
+[nirs_files_cell, subject_ids] = prep_nirsfiles_mcp(nirs_files , '_' , type);
+
+if age == 6
+    probe_id = {'BeanSmall'};
+else
+    probe_id = {'BeanLarge'};
+end
 
 MCP_struct_chan = build_MCP(nirs_files_cell,subject_ids,probe_id,'s_fix');
 
@@ -66,11 +74,11 @@ MCP_struct_chan = MCP_struct_chan(arrayfun( @(x) sum(x.fNIRS_Data.Onsets_Matrix(
 % three conditions. Cars onsets/triggers are randomly selected
 for file_idx = 1:length(MCP_struct_chan)
     fprintf('Subject: %s\n', MCP_struct_chan(file_idx).Subject.Subject_ID);
-    
+
     % Identify the column of Onsets Matrix containing Cars and count onsets
     cars_bool_index = strcmp('Cars',{MCP_struct_chan(file_idx).Experiment.Conditions(:).Name});
     n_cars = sum(MCP_struct_chan(file_idx).fNIRS_Data.Onsets_Matrix(:,cars_bool_index));
-    
+
     % Identify the column of Onsets Matrix containing other conditions and
     % count their onsets as well. Average across the other conditions to
     % determine the number of Cars trials to retain
@@ -79,18 +87,18 @@ for file_idx = 1:length(MCP_struct_chan)
     voc_bool_index = strcmp('Vocal Video',{MCP_struct_chan(file_idx).Experiment.Conditions(:).Name});
     not_cars_bool_index = logical(sil_bool_index+non_bool_index+voc_bool_index);
     n_cars_new = round(mean(sum(MCP_struct_chan(file_idx).fNIRS_Data.Onsets_Matrix(:,not_cars_bool_index),1)),0);
-    
+
     fprintf('Found %g car onsets, keeping %g as "Included Cars".\n',n_cars,n_cars_new);
-    
+
     % Randomly sample the subset of Cars to keep as Included
     index_cars_to_keep = randsample(n_cars,n_cars_new);
-    
+
     % Rename the Cars onsets as either Excluded Cars or Included Cars.
     % Included Cars will be used for the analysis
     new_labels = repmat({'Excluded Cars'},n_cars,1);
     new_labels(index_cars_to_keep) = {'Included Cars'};
     MCP_struct_chan(file_idx) = MCP_relabel_stimuli(MCP_struct_chan(file_idx),'Cars',new_labels,0);
-    
+
     fprintf('\n');
 end
 %% Classification
@@ -102,7 +110,7 @@ for hb_type = hb_species_list
     opts.pairwise = true;
     opts.comparison_type = 'correlation';
     opts.metric = 'spearman';
-    
+
     between_subj_level = nfold_classify_ParticipantLevel(...
         MCP_struct_chan,...                         % MCP data struct
         'baseline_window',[-3,0],...                % Baseline window to average and subtract from the time window
@@ -113,24 +121,24 @@ for hb_type = hb_species_list
         'hemoglobin',hb_type{:},...
         'verbose',false,...
         'opts_struct', opts);                       % Which classifier to call (also can have opts_struct)
-    
+
     OverallAcc = nanmean(between_subj_level.accuracy_matrix(:));
 
     CarsVsFaces = squeeze( between_subj_level.accuracy_matrix( ...
         strcmp(between_subj_level.conditions,'Included Cars'),...
         strcmp(between_subj_level.conditions,'Silent Video'),:,:));
-    
+
     SocialVsNonsocial = squeeze( between_subj_level.accuracy_matrix( ...
         strcmp(between_subj_level.conditions,'Nonvocal Video'),...
         strcmp(between_subj_level.conditions,'Vocal Video'),:,:));
-    
+
     VideoOnly = nanmean(...
         reshape(...
         between_subj_level.accuracy_matrix( ...
         ~strcmp(between_subj_level.conditions,'Included Cars'),...
         ~strcmp(between_subj_level.conditions,'Included Cars'),:,:),...
         9,size(between_subj_level.accuracy_matrix,4)),1)';
-    
+
     AllClasses = nanmean(...
         reshape(...
         between_subj_level.accuracy_matrix( ...
@@ -140,14 +148,14 @@ for hb_type = hb_species_list
         16,size(between_subj_level.accuracy_matrix,4)),1)';
 
     SubjectIDs = arrayfun(@(x) x.Subject.Subject_ID, MCP_struct_chan(between_subj_level.incl_subjects),'UniformOutput',false)';
-    
+
     out_filename = sprintf('Peekaboo_' + str_age + '_chan_%s_BetweenSubjAccuracy.csv',hb_type{:});
     writecell([SubjectIDs, num2cell(CarsVsFaces), num2cell(SocialVsNonsocial), num2cell(VideoOnly), num2cell(AllClasses), repmat(hb_type,length(SubjectIDs),1)],out_filename);
-    
+
     draw_mcpa_output( between_subj_level );
     saveas(gcf,sprintf('figures/' + str_age + '_%s_accuracy.pdf',hb_type{:})); close gcf;
     saveas(gcf,sprintf('figures/' + str_age + '_%s_features.pdf',hb_type{:})); close gcf;
-    
+
     fprintf(str_age + ', %s: overall=%0.2f, videos=%0.2f, visual=%0.2f, auditory=%0.2f\n', hb_type{:}, OverallAcc, nanmean(VideoOnly),nanmean(CarsVsFaces), nanmean(SocialVsNonsocial));
     save(['Peekaboo_' + str_age + '_' hb_type{:} '_chan_data.mat'],'MCP_struct_chan','between_subj_level')
 

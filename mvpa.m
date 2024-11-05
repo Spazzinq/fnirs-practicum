@@ -6,7 +6,7 @@ function mvpa(age)
 % ; {subj3_file1} }
 str_age = sprintf('%02dmo',age);
 
-nirs_folder = '/Users/conelab/Documents/BEAN_fNIRS_2024/' + str_age + '_train_peekaboo';
+nirs_folder = '/Users/conelab/Documents/fNIRS_Practicum/' + str_age + '_train_peekaboo';
 nirs_files = dir([nirs_folder filesep '*_pp24.nirs']);
 
 % Open each of the .nirs files and fix the s-matrix. Negative numbers mess

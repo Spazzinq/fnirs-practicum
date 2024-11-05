@@ -1,13 +1,12 @@
-function mvpa(age)
+function mvpa(age, preprocessed_suffix)
 %% Build a list of the .nirs files
 % Keep in mind that build_MCP expects a certain structure, and the file names
 % need to be nested by subject. Even if there is only one file per subject, it
 % needs the nested cells format: nirs_files_cell = { {subj1_file1} ; {subj2_file1}
 % ; {subj3_file1} }
-str_age = sprintf('%02dmo',age);
-
-nirs_folder = ['/Users/conelab/Documents/fNIRS_Practicum/' str_age '_train_peekaboo'];
-nirs_files = dir([nirs_folder filesep '*_pp24.nirs']);
+str_age = sprintf('%02dmo',age)
+nirs_folder = ['/Users/conelab/Documents/fNIRS_Practicum/' str_age '_train_peekaboo']
+nirs_files = dir([nirs_folder filesep '*' preprocessed_suffix '.nirs'])
 
 % Open each of the .nirs files and fix the s-matrix. Negative numbers mess
 % up the logical flagging, so they are removed in the new s_fix matrix.

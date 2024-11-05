@@ -6,7 +6,7 @@ save('db2.mat','db2')
 ages = [6, 24, 36, 60];
 str_ages = string(arrayfun(@(age) sprintf('%02dmo', age), ages, 'UniformOutput', false));
 
-%% Iterate over all ages
+%% Iterate over all ages and save output with specified suffix
 for i = 1:length(ages)
     filename = dir('./' + str_ages(i) + '_train_peekaboo/BCR*peekaboo_' + str_ages(i) + '.nirs')
     preprocessing_pipeline(filename, '_ppPracF24', ages(i))

@@ -8,5 +8,5 @@ str_ages = string(arrayfun(@(age) sprintf('%02dmo', age), ages, 'UniformOutput',
 
 for i = 1:length(ages)
     filename = dir('./' + str_ages(i) + '_train_peekaboo/BCR*peekaboo_' + str_ages(i) + '.nirs')
-    proprocessing_pipeline(filename, '_ppPracF24', ages(i))
+    preprocessing_pipeline(filename, '_ppPracF24', ages(i))
 end

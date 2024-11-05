@@ -1,2 +1,8 @@
 *.nirs
+06mo_train_peekaboo/
+24mo_train_peekaboo/
+36mo_train_peekaboo/
+60mo_train_peekaboo/
+
 db2.mat
+.DS_Store

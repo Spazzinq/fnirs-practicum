@@ -42,16 +42,25 @@ MCP_struct_chan = build_MCP(nirs_files_cell,subject_ids,probe_id,'s_fix');
 
 % Reassign all the condition names based on the names stored in the .nirs
 % files. Ideally they'd be the same order, but who knows!
+    
+
 for file_index = 1:length(nirs_files)
-    nir_dat = load(MCP_struct_chan(file_index).Experiment.Runs(1).Source_files{:},'-mat');
-    fprintf('Subject: %s\n', MCP_struct_chan(file_index).Subject.Subject_ID);
-    cond_names = nir_dat.CondNames;
-    for old_mark = 1:length(cond_names)
-        fprintf('%s -> %s ', cond_names{old_mark}, MCP_struct_chan(file_index).Experiment.Conditions(old_mark).Name)
-        MCP_struct_chan(file_index) = MCP_relabel_stimuli(MCP_struct_chan(file_index),old_mark,cond_names{old_mark},0);
+    try
+        nir_dat = load(MCP_struct_chan(file_index).Experiment.Runs(1).Source_files{:},'-mat');
+        fprintf('Subject: %s\n', MCP_struct_chan(file_index).Subject.Subject_ID);
+        cond_names = nir_dat.CondNames;
+        for old_mark = 1:length(cond_names)
+            fprintf('%s -> %s ', cond_names{old_mark}, MCP_struct_chan(file_index).Experiment.Conditions(old_mark).Name)
+            MCP_struct_chan(file_index) = MCP_relabel_stimuli(MCP_struct_chan(file_index),old_mark,cond_names{old_mark},0);
+        end
+        fprintf('\n');
+    catch
+         warning('Index out of bounds');
+         break; 
     end
-    fprintf('\n');
 end
+
+
 
 % Reassign all the condition names to something interpretable
 for file_index = 1:length(nirs_files)
@@ -151,7 +160,7 @@ for hb_type = hb_species_list
     out_filename = sprintf('Peekaboo_%s_chan_%s_BetweenSubjAccuracy.csv', str_age, hb_type{:});
     writecell([SubjectIDs, num2cell(CarsVsFaces), num2cell(SocialVsNonsocial), num2cell(VideoOnly), num2cell(AllClasses), repmat(hb_type,length(SubjectIDs),1)],out_filename);
 
-    draw_mcpa_output( between_subj_level );
+    draw_mvpa_output( between_subj_level );
     saveas(gcf,sprintf('figures/%s_%s_accuracy.pdf', str_age, hb_type{:})); close gcf;
     saveas(gcf,sprintf('figures/%s_%s_features.pdf', str_age, hb_type{:})); close gcf;
 

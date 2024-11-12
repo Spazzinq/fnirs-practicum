@@ -6,3 +6,5 @@
 
 db2.mat
 .DS_Store
+*.mat
+*.csv

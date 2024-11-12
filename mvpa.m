@@ -40,6 +40,11 @@ end
 
 MCP_struct_chan = build_MCP(nirs_files_cell,subject_ids,probe_id,'s_fix');
 
+%% Filter included_channel
+% Will take the MCP_struct and return front_MCP_Chan, which contains only
+% the "frontal" channels for each age condition (Based on Emberson et al.
+% 2017, as well as Fu & Richards 2023)
+
 % Include only the specified columns in MCP_struct_chan
 % Only if included_channels is not empty
 if ~isempty(included_channels)

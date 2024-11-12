@@ -1,4 +1,4 @@
-function mvpa(age, preprocessed_suffix)
+function mvpa(age, included_channels, preprocessed_suffix)
 %% Build a list of the .nirs files
 % Keep in mind that build_MCP expects a certain structure, and the file names
 % need to be nested by subject. Even if there is only one file per subject, it
@@ -32,9 +32,6 @@ end
 
 [nirs_files_cell, subject_ids] = prep_nirsfiles_mcp(nirs_files , '_' , type);
 
-nirs_files_cell
-return
-
 if age == 6
     probe_id = {'BeanSmall'};
 else
@@ -42,6 +39,14 @@ else
 end
 
 MCP_struct_chan = build_MCP(nirs_files_cell,subject_ids,probe_id,'s_fix');
+
+% Include only the specified columns in MCP_struct_chan
+% Only if included_channels is not empty
+if ~isempty(included_channels)
+    for file_index = 1:length(MCP_struct_chan)
+        MCP_struct_chan(file_index).Data = MCP_struct_chan(file_index).Data(:, included_channels);
+    end
+end
 
 % Reassign all the condition names based on the names stored in the .nirs
 % files. Ideally they'd be the same order, but who knows!

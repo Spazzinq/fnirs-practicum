@@ -40,19 +40,6 @@ end
 
 MCP_struct_chan = build_MCP(nirs_files_cell,subject_ids,probe_id,'s_fix');
 
-%% Filter included_channel
-% Will take the MCP_struct and return front_MCP_Chan, which contains only
-% the "frontal" channels for each age condition (Based on Emberson et al.
-% 2017, as well as Fu & Richards 2023)
-
-% Include only the specified columns in MCP_struct_chan
-% Only if included_channels is not empty
-if ~isempty(included_channels)
-    for file_index = 1:length(MCP_struct_chan)
-        MCP_struct_chan(file_index).Data = MCP_struct_chan(file_index).Data(:, included_channels);
-    end
-end
-
 % Reassign all the condition names based on the names stored in the .nirs
 % files. Ideally they'd be the same order, but who knows!
 for file_index = 1:length(nirs_files)
@@ -130,6 +117,7 @@ for hb_type = hb_species_list
 
     between_subj_level = nfold_classify_ParticipantLevel(...
         MCP_struct_chan,...                         % MCP data struct
+        'incl_features',included_channels,...
         'baseline_window',[-3,0],...                % Baseline window to average and subtract from the time window
         'time_window',[2,8],...                     % Time window to analyze (in sec)
         'summary_handle',@nanmean,...               % Which function to use to summarize data to features

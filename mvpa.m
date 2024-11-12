@@ -32,6 +32,9 @@ end
 
 [nirs_files_cell, subject_ids] = prep_nirsfiles_mcp(nirs_files , '_' , type);
 
+nirs_files_cell
+return
+
 if age == 6
     probe_id = {'BeanSmall'};
 else
@@ -42,8 +45,6 @@ MCP_struct_chan = build_MCP(nirs_files_cell,subject_ids,probe_id,'s_fix');
 
 % Reassign all the condition names based on the names stored in the .nirs
 % files. Ideally they'd be the same order, but who knows!
-    
-
 for file_index = 1:length(nirs_files)
     try
         nir_dat = load(MCP_struct_chan(file_index).Experiment.Runs(1).Source_files{:},'-mat');
@@ -55,12 +56,10 @@ for file_index = 1:length(nirs_files)
         end
         fprintf('\n');
     catch
-         warning('Index out of bounds');
-         break; 
+        warning('Index out of bounds');
+        break;
     end
 end
-
-
 
 % Reassign all the condition names to something interpretable
 for file_index = 1:length(nirs_files)

@@ -1,4 +1,4 @@
-function mvpa(age, included_channels, preprocessed_suffix)
+function mvpa(age, included_features, preprocessed_suffix)
 %% Build a list of the .nirs files
 % Keep in mind that build_MCP expects a certain structure, and the file names
 % need to be nested by subject. Even if there is only one file per subject, it
@@ -117,7 +117,7 @@ for hb_type = hb_species_list
 
     between_subj_level = nfold_classify_ParticipantLevel(...
         MCP_struct_chan,...                         % MCP data struct
-        'incl_features',included_channels,...
+        'incl_features',included_features,...
         'baseline_window',[-3,0],...                % Baseline window to average and subtract from the time window
         'time_window',[2,8],...                     % Time window to analyze (in sec)
         'summary_handle',@nanmean,...               % Which function to use to summarize data to features

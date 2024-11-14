@@ -3,8 +3,10 @@
 24mo_train_peekaboo/
 36mo_train_peekaboo/
 60mo_train_peekaboo/
+initial-analysis/
 
 db2.mat
 .DS_Store
 *.mat
 *.csv
+*.asv

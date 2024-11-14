@@ -12,3 +12,6 @@
 # Extra Scripts
 ## Rename files
 `for file in *peekaboo.nirs; do mv "$file" "${file%peekaboo.nirs}peekaboo_06mo.nirs"; done`
+
+`for file in *data.mat; do mv "$file" "initial-analysis/${file}"; done`
+`for file in *Accuracy.csv; do mv "$file" "initial-analysis/${file}"; done`

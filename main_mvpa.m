@@ -9,15 +9,17 @@ incl_channels_older = [15, 16, 17, 18, 34, 35, 36, 37];
 
 for i = 1:length(ages)
     if ages(i) == 6
-        incl_channels = incl_channels_6mo;
+        included_channels = incl_channels_6mo;
+        total_channels = 32;
     else
-        incl_channels = incl_channels_older;
+        included_channels = incl_channels_older;
+        total_channels = 38;
     end
 
-    incl_features = zeros(2,32);
-    incl_features(:,incl_channels) = 1;
-    channels = find(incl_features(:))
+    incl_features = zeros(2, total_channels);
+    incl_features(:,included_channels) = 1;
+    included_channels = find(incl_features(:))
 
 
-    mvpa(ages(i), channels, 'ppPracF24') % the suffix for the preprocessed files
+    mvpa(ages(i), included_channels, 'ppPracF24') % the suffix for the preprocessed files
 end

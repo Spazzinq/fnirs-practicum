@@ -22,7 +22,7 @@ end
 
 restoredefaultpath;
 % Download Consortium toolbox at: https://github.com/TeamMCPA/Consortium-Analyses
-addpath(genpath([pwd filesep 'Consortium-Analyses-20210827']));
+addpath(genpath([pwd filesep 'Consortium-Analyses-SfNIRS_2022']));
 
 if age == 6 || age == 24
     type = 'BCR';
@@ -114,10 +114,16 @@ for hb_type = hb_species_list
     opts.pairwise = true;
     opts.comparison_type = 'correlation';
     opts.metric = 'spearman';
+    
+    total_channels = min(arrayfun(@(x) length(x.Experiment.Probe_arrays.Channels), MCP_struct_chan));
+    n_feats_per_channel = length(strfind(hb_type{:},'+'))+1;
+    incl_features = zeros(n_feats_per_channel, total_channels);
+    incl_features(:,included_channels) = 1;
+    incl_features = find(incl_features(:));
 
     between_subj_level = nfold_classify_ParticipantLevel(...
-        MCP_struct_chan,...                         % MCP data struct
-        'incl_features',included_channels,...
+        MCP_struct_chan,...                         % MCP data struct%         'incl_features',incl_features,... 
+        'incl_channels',included_channels,...
         'baseline_window',[-3,0],...                % Baseline window to average and subtract from the time window
         'time_window',[2,8],...                     % Time window to analyze (in sec)
         'summary_handle',@nanmean,...               % Which function to use to summarize data to features
@@ -154,6 +160,10 @@ for hb_type = hb_species_list
 
     SubjectIDs = arrayfun(@(x) x.Subject.Subject_ID, MCP_struct_chan(between_subj_level.incl_subjects),'UniformOutput',false)';
 
+    mkdir("./out")
+    mkdir("./out/accuracy")
+    mkdir("./out/figures")
+    mkdir("./out/data")
     out_filename = sprintf('out/accuracy/Peekaboo_%s_chan_%s_BetweenSubjAccuracy.csv', str_age, hb_type{:});
     writecell([SubjectIDs, num2cell(CarsVsFaces), num2cell(SocialVsNonsocial), num2cell(VideoOnly), num2cell(AllClasses), repmat(hb_type,length(SubjectIDs),1)],out_filename);
 

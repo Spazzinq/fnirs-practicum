@@ -115,14 +115,14 @@ for hb_type = hb_species_list
     opts.comparison_type = 'correlation';
     opts.metric = 'spearman';
     
-    total_channels = min(arrayfun(@(x) length(x.Experiment.Probe_arrays.Channels), MCP_struct_chan));
-    n_feats_per_channel = length(strfind(hb_type{:},'+'))+1;
-    incl_features = zeros(n_feats_per_channel, total_channels);
-    incl_features(:,included_channels) = 1;
-    incl_features = find(incl_features(:));
+%     total_channels = min(arrayfun(@(x) length(x.Experiment.Probe_arrays.Channels), MCP_struct_chan));
+%     n_feats_per_channel = length(strfind(hb_type{:},'+'))+1;
+%     incl_features = zeros(n_feats_per_channel, total_channels);
+%     incl_features(:,included_channels) = 1;
+%     incl_features = find(incl_features(:));
 
     between_subj_level = nfold_classify_ParticipantLevel(...
-        MCP_struct_chan,...                         % MCP data struct%         'incl_features',incl_features,... 
+        MCP_struct_chan,...                         % MCP data struct%         
         'incl_channels',included_channels,...
         'baseline_window',[-3,0],...                % Baseline window to average and subtract from the time window
         'time_window',[2,8],...                     % Time window to analyze (in sec)
@@ -160,18 +160,18 @@ for hb_type = hb_species_list
 
     SubjectIDs = arrayfun(@(x) x.Subject.Subject_ID, MCP_struct_chan(between_subj_level.incl_subjects),'UniformOutput',false)';
 
-    mkdir("./out")
-    mkdir("./out/accuracy")
-    mkdir("./out/figures")
-    mkdir("./out/data")
-    out_filename = sprintf('out/accuracy/Peekaboo_%s_chan_%s_BetweenSubjAccuracy.csv', str_age, hb_type{:});
+    mkdir("./out_nonfrontal")
+    mkdir("./out_nonfrontal/accuracy")
+    mkdir("./out_nonfrontal/figures")
+    mkdir("./out_nonfrontal/data")
+    out_filename = sprintf('out_nonfrontal/accuracy/Peekaboo_%s_chan_%s_BetweenSubjAccuracy.csv', str_age, hb_type{:});
     writecell([SubjectIDs, num2cell(CarsVsFaces), num2cell(SocialVsNonsocial), num2cell(VideoOnly), num2cell(AllClasses), repmat(hb_type,length(SubjectIDs),1)],out_filename);
 
     draw_mcpa_output( between_subj_level );
-    saveas(gcf,sprintf('out/figures/%s_%s_accuracy.pdf', str_age, hb_type{:})); close gcf;
-    saveas(gcf,sprintf('out/figures/%s_%s_features.pdf', str_age, hb_type{:})); close gcf;
+    saveas(gcf,sprintf('out_nonfrontal/figures/%s_%s_accuracy.pdf', str_age, hb_type{:})); close gcf;
+    saveas(gcf,sprintf('out_nonfrontal/figures/%s_%s_features.pdf', str_age, hb_type{:})); close gcf;
 
     fprintf('%s, %s: overall=%0.2f, videos=%0.2f, visual=%0.2f, auditory=%0.2f\n', str_age, hb_type{:}, OverallAcc, nanmean(VideoOnly),nanmean(CarsVsFaces), nanmean(SocialVsNonsocial));
-    save(['out/data/Peekaboo_' str_age '_' hb_type{:} '_chan_data.mat'],'MCP_struct_chan','between_subj_level')
+    save(['out_nonfrontal/data/Peekaboo_' str_age '_' hb_type{:} '_chan_data.mat'],'MCP_struct_chan','between_subj_level')
 
 end

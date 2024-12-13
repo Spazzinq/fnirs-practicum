@@ -54,7 +54,7 @@ head_circumferences = head_circumferences(:, {'ID', 'head_circ', 'Age'});
 head_circumferences.Properties.VariableNames = ["ID", "HeadCircumference", "Age"];
 table = innerjoin(table, head_circumferences, 'Keys', {'ID', 'Age'});
 
-% Output table
+% Output table to check formatting
 table;
 
 % Sanity check of original all-channel data
@@ -65,8 +65,8 @@ table;
 % insignificant interactions
 % fitlm(table(table.("Whole")==0,:), 'All ~ (Posterior + Anterior) * (Age + HeadCircumference)')
 % fitlm(table(table.("Whole")==0,:), 'All ~ (Posterior + Anterior) * (Age) + HeadCircumference')
-fitlm(table(table.("Whole")==0,:), 'All ~ (Posterior + Anterior) + (Age) + HeadCircumference')
+linear_model = fitlm(table(table.("Whole")==0,:), 'All ~ (Posterior + Anterior) + (Age) + HeadCircumference')
 
 % Print the largest mixed-effects model that can actually run on Trashcan Mac
 % (adding HeadCircumference as an interaction took too long)
-lme_model = fitlme(table(table.("Whole")==0,:), 'All ~ (Anterior + Posterior) * Age + HeadCircumference + (1+(Anterior + Posterior) * Age + HeadCircumference | ID)')
+mixed_model = fitlme(table(table.("Whole")==0,:), 'All ~ (Anterior + Posterior) * Age + HeadCircumference + (1+(Anterior + Posterior) * Age + HeadCircumference | ID)')

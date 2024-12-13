@@ -1,12 +1,14 @@
-function mvpa(age, included_channels, preprocessed_suffix)
+function mvpa(age, included_channels, preprocessed_suffix, out_name)
+% Convert age number into string format, e.g. 06mo, 24mo
+str_age = sprintf('%02dmo',age);
+
 %% Build a list of the .nirs files
 % Keep in mind that build_MCP expects a certain structure, and the file names
 % need to be nested by subject. Even if there is only one file per subject, it
 % needs the nested cells format: nirs_files_cell = { {subj1_file1} ; {subj2_file1}
 % ; {subj3_file1} }
-str_age = sprintf('%02dmo',age)
-nirs_folder = ['/Users/conelab/Documents/fNIRS_Practicum/' str_age '_train_peekaboo']
-nirs_files = dir([nirs_folder filesep '*' preprocessed_suffix '.nirs'])
+nirs_folder = ['/Users/conelab/Documents/fNIRS_Practicum/' str_age '_train_peekaboo'];
+nirs_files = dir([nirs_folder filesep '*' preprocessed_suffix '.nirs']);
 
 % Open each of the .nirs files and fix the s-matrix. Negative numbers mess
 % up the logical flagging, so they are removed in the new s_fix matrix.
@@ -18,12 +20,13 @@ for file_index = 1:length(nirs_files)
     end
     clear('nir_dat');
 end
-%% Build the MCP struct
 
+%% Build the MCP struct
 restoredefaultpath;
 % Download Consortium toolbox at: https://github.com/TeamMCPA/Consortium-Analyses
 addpath(genpath([pwd filesep 'Consortium-Analyses-SfNIRS_2022']));
 
+% Assign the BCR/BP type based on age
 if age == 6 || age == 24
     type = 'BCR';
 elseif age == 36 || age == 60
@@ -32,6 +35,7 @@ end
 
 [nirs_files_cell, subject_ids] = prep_nirsfiles_mcp(nirs_files , '_' , type);
 
+% Assign the cap type based on age
 if age == 6
     probe_id = {'BeanSmall'};
 else
@@ -63,6 +67,7 @@ for file_index = 1:length(nirs_files)
     fprintf('Subject: %s\n', MCP_struct_chan(file_index).Subject.Subject_ID);
     old_cond_names = {'C','S','N','V'};
     cond_names = {'Cars','Silent Video','Nonvocal Video','Vocal Video'};
+
     for old_index = 1:length(cond_names)
         fprintf('%s -> %s ', cond_names{old_index}, old_cond_names{old_index})
         MCP_struct_chan(file_index) = MCP_relabel_stimuli(MCP_struct_chan(file_index),old_cond_names{old_index},cond_names{old_index},0);
@@ -105,8 +110,8 @@ for file_index = 1:length(MCP_struct_chan)
 
     fprintf('\n');
 end
-%% Classification
 
+%% Classification
 hb_species_list = {'Oxy+Deoxy'}; %% {'Oxy','Deoxy','Oxy+Deoxy'};
 
 for hb_type = hb_species_list
@@ -115,6 +120,8 @@ for hb_type = hb_species_list
     opts.comparison_type = 'correlation';
     opts.metric = 'spearman';
     
+    % We tried messing around with providing incl_features AND
+    % incl_channels but the code doesn't seem to be able to handle both
 %     total_channels = min(arrayfun(@(x) length(x.Experiment.Probe_arrays.Channels), MCP_struct_chan));
 %     n_feats_per_channel = length(strfind(hb_type{:},'+'))+1;
 %     incl_features = zeros(n_feats_per_channel, total_channels);
@@ -122,8 +129,8 @@ for hb_type = hb_species_list
 %     incl_features = find(incl_features(:));
 
     between_subj_level = nfold_classify_ParticipantLevel(...
-        MCP_struct_chan,...                         % MCP data struct%         
-        'incl_channels',included_channels,...
+        MCP_struct_chan,...                         % MCP data struct         
+        'incl_channels',included_channels,...       % Specify channels to train on
         'baseline_window',[-3,0],...                % Baseline window to average and subtract from the time window
         'time_window',[2,8],...                     % Time window to analyze (in sec)
         'summary_handle',@nanmean,...               % Which function to use to summarize data to features
@@ -160,18 +167,19 @@ for hb_type = hb_species_list
 
     SubjectIDs = arrayfun(@(x) x.Subject.Subject_ID, MCP_struct_chan(between_subj_level.incl_subjects),'UniformOutput',false)';
 
-    mkdir("./out_nonfrontal")
-    mkdir("./out_nonfrontal/accuracy")
-    mkdir("./out_nonfrontal/figures")
-    mkdir("./out_nonfrontal/data")
-    out_filename = sprintf('out_nonfrontal/accuracy/Peekaboo_%s_chan_%s_BetweenSubjAccuracy.csv', str_age, hb_type{:});
+    mkdir(['./' out_name])
+    mkdir(['./' out_name '/accuracy'])
+    mkdir(['./' out_name '/figures'])
+    mkdir(['./' out_name '/data'])
+    out_filename = sprintf([out_name '/accuracy/Peekaboo_%s_chan_%s_BetweenSubjAccuracy.csv'], str_age, hb_type{:});
     writecell([SubjectIDs, num2cell(CarsVsFaces), num2cell(SocialVsNonsocial), num2cell(VideoOnly), num2cell(AllClasses), repmat(hb_type,length(SubjectIDs),1)],out_filename);
 
     draw_mcpa_output( between_subj_level );
-    saveas(gcf,sprintf('out_nonfrontal/figures/%s_%s_accuracy.pdf', str_age, hb_type{:})); close gcf;
-    saveas(gcf,sprintf('out_nonfrontal/figures/%s_%s_features.pdf', str_age, hb_type{:})); close gcf;
+    saveas(gcf,sprintf([out_name '/figures/%s_%s_accuracy.pdf'], str_age, hb_type{:})); close gcf;
+    saveas(gcf,sprintf([out_name '/figures/%s_%s_features.pdf'], str_age, hb_type{:})); close gcf;
 
     fprintf('%s, %s: overall=%0.2f, videos=%0.2f, visual=%0.2f, auditory=%0.2f\n', str_age, hb_type{:}, OverallAcc, nanmean(VideoOnly),nanmean(CarsVsFaces), nanmean(SocialVsNonsocial));
-    save(['out_nonfrontal/data/Peekaboo_' str_age '_' hb_type{:} '_chan_data.mat'],'MCP_struct_chan','between_subj_level')
-
+    save([out_name '/data/Peekaboo_' str_age '_' hb_type{:} '_chan_data.mat'],'MCP_struct_chan','between_subj_level')
+    
+    
 end

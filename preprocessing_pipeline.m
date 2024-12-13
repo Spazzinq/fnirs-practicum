@@ -1,4 +1,4 @@
-function trial_counts = preprocessing_pipeline( nirs_file, new_suffix, age )
+function trial_counts = preprocessing_pipeline( nirs_file, new_suffix, age)
 %This function preprocesses one or more *.nirs files using Homer2 and
 %the preprocessing steps specified in the SPL+WAV (spline + wavelet)
 %pipeline of DiLorenzo et al.'s 2019 paper in Neuroimage.

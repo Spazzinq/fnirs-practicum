@@ -9,6 +9,8 @@ In general, the code is documented well enough that you should be able to modify
 
 Outputted classifier and permutation-based null hypothesis data can be found in the PDFs in subfolders prefixed with `out_` followed by the region of interest. Output from linear regression and mixed effects can be found [here](https://docs.google.com/document/d/1TLibp-FIbkeyu_htAAK5yxhVb3vAz7XHBr9SJjCERdw/edit?usp=sharing). Running the scripts below on the raw data should reproduce all of the findings, though you may have to uncomment a line or two in `linear_regression.m` for extra linear/mixed-effects analyses that were ommited from the poster/paper itself.
 
+This code uses the [Homer2 library](https://openfnirs.org/software/homer/) and [fNIRS classifier library](https://github.com/TeamMCPA/Consortium-Analyses/tree/SfNIRS_2022) from TeamMCPA which are already included. Any applicable licenses from those projects may apply.
+
 ## Preprocessing
 To run the preprocessing, run `main_preprocessing.m`, modifying any data-specific variables in the script as necessary. Make sure the 2nd parameter to the `preprocessing_pipeline.m` call, which is the `new_suffix` parameter, is set to something that won't override your existing preprocessed data, if any.
 

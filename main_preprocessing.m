@@ -1,4 +1,7 @@
+% Comment this line out if you're operating from the right
+% directory NOT on the conelab PC
 cd('/Users/conelab/Documents/fNIRS_Practicum')
+
 addpath(genpath("./homer_v2_8"))
 % Some magic numbers that you need to run a toolbox without paying for it
 db2 = [0.3415 0.5915 0.1585 -0.0915];

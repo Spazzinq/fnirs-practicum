@@ -11,6 +11,8 @@ Outputted classifier and permutation-based null hypothesis data can be found in 
 
 This code uses the [Homer2 library](https://openfnirs.org/software/homer/) and [fNIRS classifier library](https://github.com/TeamMCPA/Consortium-Analyses/tree/SfNIRS_2022) from TeamMCPA which are already included. Any applicable licenses from those projects may apply.
 
+NOTE: Any absolute file path references are due to the multi-user setup on the `conelab` PC. They are located on line 3 of `main_preprocessing.m` and line 10 of `mvpa.m`. Change them as neeeded if the data is no longer secured on the `conelab` PC.
+
 ## Preprocessing
 To run the preprocessing, run `main_preprocessing.m`, modifying any data-specific variables in the script as necessary. Make sure the 2nd parameter to the `preprocessing_pipeline.m` call, which is the `new_suffix` parameter, is set to something that won't override your existing preprocessed data, if any.
 
